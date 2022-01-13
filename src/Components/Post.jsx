@@ -1,54 +1,68 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import ReactPaginate from "react-paginate";
-import Axios from "./Axios";
+import "./home.css";
 
 
 const Post = () => {
   let [state, setState] = useState([]);
   let [loading, setLoading] = useState(false);
   let [pageNumber, setPageNumber] = useState(0);
+//   let [firstPage,setFirstPage]=useState(0);
   let userPerPage = 10;
   let pageVisited = pageNumber * userPerPage;
 
+  useEffect(() => {
+    axios.get("https://jsonplaceholder.typicode.com/todos")
+    .then(res=>{
+        console.log(res.data)
+        setState(res.data)
+    })
+  }, []);
+  let handlePrev=()=>{
+      setPageNumber(pageNumber-1);
+  }
+  let handlenext=()=>{
+    setPageNumber(pageNumber+1);
+}
+let handleStart=()=>{
+    setPageNumber(0);
+}
+let handleLast=()=>{
+    let pageCount = Math.ceil(state.length / userPerPage);
+    setPageNumber(pageCount-1);
+}
   let displayUser = state
     .slice(pageVisited, pageVisited + userPerPage)
     .map(x => (
       <tr key={x.id} className="bodyrow">
         <td>{x.id}</td>
+        <td>{x.userId}</td>
         <td>{x.title}</td>
-        <td className={x.completed ? "btn btn-success" :"btn btn-danger"}>{x.completed ? "completed" : "pending"}</td>
+        <td>
+        <p className={x.completed ? "btn btn-success" :"btn btn-danger"}>
+             {x.completed ? "Yes" :"No"}
+         </p>
+           </td>
       </tr>
     ));
-  useEffect(() => {
-    let fetchData = async () => {
-      let { data } = await Axios.get("todos");
-      //   console.log(data);
-      //   setState(data);
-      try {
-        setLoading(true);
-        setState(data);
-      } catch (error) {
-        console.log(error.message);
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+  
 
-  let pageCount = Math.ceil(state.length / userPerPage);
+  
 
   let changePage = ({ selected }) => {
     setPageNumber(selected);
   };
   return (
-    <section>
+    <section className="paginationBlock">
       {loading === true ? (
         "loading...."
       ) : (
-        <table>
+        <table className="table">
           <thead>
             <tr className="headRow">
               <th>id</th>
+              <th>UserId</th>
               <th>title</th>
               <th>completed</th>
             </tr>
@@ -57,19 +71,25 @@ const Post = () => {
           <tbody>{displayUser}</tbody>
         </table>
       )}
-      <section className="paginationBlock">
-        <ReactPaginate
-          previousLable={"Previous"}
-          nextLable={"Next"}
-          pageCount={pageCount}
-          onPageChange={changePage}
-          containerClass={"paginationBttns"}
-          previousLinkClassName={"previousBttn"}
-          nextLinkClassName={"nextBttn"}
-          disableClassName={"paginationDisabled"}
-          activeClassName={"paginationActive"}
-        />
-      </section>
+      <nav className='d-flex justify-content-center'>
+          <button onClick={handlePrev}>previous</button>
+          <button onClick={handleStart}>start</button>
+          <button onClick={handleLast}>last</button>
+          <button onClick={handlenext}>next</button>
+      {/* <ReactPaginate
+        className="pagination"
+        previousLable={"Previous"}
+        nextLable={"Next"}
+        pageCount={pageCount}
+        onPageChange={changePage}
+        containerClass={"paginationBttns"}
+        previousLinkClassName={"previousBttn"}
+        nextLinkClassName={"nextBttn"}
+        disableClassName={"paginationDisabled"}
+        activeClassName={"paginationActive"}
+        // lastPage={lastpage}
+      /> */}
+      </nav>
     </section>
   );
 };
